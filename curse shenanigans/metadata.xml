@@ -8,7 +8,7 @@
 This is not a curse manager. It won't set curses at the start of a floor. It simply lets you play around with curses for debugging purposes.
 
 Modded curses and StageApi stages are supported.</description>
-    <version>1.1</version>
+    <version>1.2</version>
     <visibility>Public</visibility>
     <tag id="Lua"/>
     <tag id="Hazards"/>

@@ -36,6 +36,19 @@ if REPENTOGON then
     return nil
   end
   
+  function mod:getXmlCurseName(id)
+    id = tonumber(id)
+    
+    if math.type(id) == 'integer' then
+      local entry = XMLData.GetEntryById(XMLNode.CURSE, id)
+      if entry and type(entry) == 'table' and entry.name and entry.name ~= '' then
+        return entry.name
+      end
+    end
+    
+    return nil
+  end
+  
   function mod:getModdedCurses()
     local curses = {}
     
@@ -120,19 +133,20 @@ if REPENTOGON then
     
     local idx = 0
     for i, v in ipairs({
-                        { id = LevelCurse.CURSE_OF_DARKNESS   , name = '#CURSE_OF_DARKNESS_NAME' },
-                        { id = LevelCurse.CURSE_OF_LABYRINTH  , name = '#CURSE_OF_THE_LABYRINTH_NAME', hint = 'Toggling will reload stage, Crashes in The Void' },
-                        { id = LevelCurse.CURSE_OF_THE_LOST   , name = '#CURSE_OF_THE_LOST_NAME' },
-                        { id = LevelCurse.CURSE_OF_THE_UNKNOWN, name = '#CURSE_OF_THE_UNKNOWN_NAME' },
-                        { id = LevelCurse.CURSE_OF_THE_CURSED , name = '#CURSE_OF_THE_CURSED_NAME'   , hint = 'Move to new room after toggling' },
-                        { id = LevelCurse.CURSE_OF_MAZE       , name = '#CURSE_OF_THE_MAZE_NAME' },
-                        { id = LevelCurse.CURSE_OF_BLIND      , name = '#CURSE_OF_THE_BLIND_NAME'    , hint = 'Move to new room after toggling' },
-                        { id = LevelCurse.CURSE_OF_GIANT      , name = '#CURSE_OF_THE_GIANT_NAME'    , hint = 'May crash game! Toggling will reload stage' },
+                        { id = LevelCurse.CURSE_OF_DARKNESS },
+                        { id = LevelCurse.CURSE_OF_LABYRINTH , hint = 'Toggling will reload stage, Crashes in The Void' },
+                        { id = LevelCurse.CURSE_OF_THE_LOST },
+                        { id = LevelCurse.CURSE_OF_THE_UNKNOWN },
+                        { id = LevelCurse.CURSE_OF_THE_CURSED, hint = 'Move to new room after toggling' },
+                        { id = LevelCurse.CURSE_OF_MAZE },
+                        { id = LevelCurse.CURSE_OF_BLIND     , hint = 'Move to new room after toggling' },
+                        { id = LevelCurse.CURSE_OF_GIANT     , hint = 'May crash game! Toggling will reload stage' },
                       })
     do
       idx = i
       local keys = {}
-      table.insert(keys, mod:localize('Curses', v.name))
+      local name = mod:getXmlCurseName(v.id) or ''
+      table.insert(keys, mod:localize('Curses', name))
       if v.hint then
         table.insert(keys, v.hint)
       end
