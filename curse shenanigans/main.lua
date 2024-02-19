@@ -36,13 +36,13 @@ if REPENTOGON then
     return nil
   end
   
-  function mod:getXmlCurseName(id)
+  function mod:getXmlCurseUntranslatedName(id)
     id = tonumber(id)
     
     if math.type(id) == 'integer' then
       local entry = XMLData.GetEntryById(XMLNode.CURSE, id)
-      if entry and type(entry) == 'table' and entry.name and entry.name ~= '' then
-        return entry.name
+      if entry and type(entry) == 'table' and entry.untranslatedname and entry.untranslatedname ~= '' then
+        return entry.untranslatedname
       end
     end
     
@@ -106,13 +106,70 @@ if REPENTOGON then
     end
   end
   
-  function mod:removeCurse(curse)
+  function mod:addCurse(curse)
+    local seeds = game:GetSeeds()
     local level = game:GetLevel()
     
+    -- CURSE_OF_GIANT and modded curses don't apply
+    local seedEffectPreventAllMap = {
+      [LevelCurse.CURSE_OF_DARKNESS] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+      [LevelCurse.CURSE_OF_LABYRINTH] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+      [LevelCurse.CURSE_OF_THE_LOST] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+      [LevelCurse.CURSE_OF_THE_UNKNOWN] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+      [LevelCurse.CURSE_OF_THE_CURSED] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+      [LevelCurse.CURSE_OF_MAZE] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+      [LevelCurse.CURSE_OF_BLIND] = SeedEffect.SEED_PREVENT_ALL_CURSES,
+    }
+    
+    local seedEffectPreventAll = seedEffectPreventAllMap[curse]
+    if seedEffectPreventAll and seeds:HasSeedEffect(seedEffectPreventAll) then
+      seeds:RemoveSeedEffect(seedEffectPreventAll)
+      
+      for c, _ in pairs(seedEffectPreventAllMap) do
+        mod:removeCurse(c)
+      end
+    end
+    
+    local seedEffectMap = {
+      [LevelCurse.CURSE_OF_DARKNESS] = SeedEffect.SEED_PREVENT_CURSE_DARKNESS,
+      [LevelCurse.CURSE_OF_LABYRINTH] = SeedEffect.SEED_PREVENT_CURSE_LABYRINTH,
+      [LevelCurse.CURSE_OF_THE_LOST] = SeedEffect.SEED_PREVENT_CURSE_LOST,
+      [LevelCurse.CURSE_OF_THE_UNKNOWN] = SeedEffect.SEED_PREVENT_CURSE_UNKNOWN,
+      [LevelCurse.CURSE_OF_MAZE] = SeedEffect.SEED_PREVENT_CURSE_MAZE,
+      [LevelCurse.CURSE_OF_BLIND] = SeedEffect.SEED_PREVENT_CURSE_BLIND,
+    }
+    
+    local seedEffect = seedEffectMap[curse]
+    if seedEffect and seeds:HasSeedEffect(seedEffect) then
+      seeds:RemoveSeedEffect(seedEffect)
+    end
+    
+    level:AddCurse(curse, false)
+  end
+  
+  function mod:removeCurse(curse)
+    local seeds = game:GetSeeds()
+    local level = game:GetLevel()
+    
+    local seedEffectMap = {
+      [LevelCurse.CURSE_OF_DARKNESS] = SeedEffect.SEED_PERMANENT_CURSE_DARKNESS,
+      [LevelCurse.CURSE_OF_LABYRINTH] = SeedEffect.SEED_PERMANENT_CURSE_LABYRINTH,
+      [LevelCurse.CURSE_OF_THE_LOST] = SeedEffect.SEED_PERMANENT_CURSE_LOST,
+      [LevelCurse.CURSE_OF_THE_UNKNOWN] = SeedEffect.SEED_PERMANENT_CURSE_UNKNOWN,
+      [LevelCurse.CURSE_OF_THE_CURSED] = SeedEffect.SEED_PERMANENT_CURSE_CURSED,
+      [LevelCurse.CURSE_OF_MAZE] = SeedEffect.SEED_PERMANENT_CURSE_MAZE,
+      [LevelCurse.CURSE_OF_BLIND] = SeedEffect.SEED_PERMANENT_CURSE_BLIND,
+    }
+    
+    local seedEffect = seedEffectMap[curse]
+    if seedEffect and seeds:HasSeedEffect(seedEffect) then
+      seeds:RemoveSeedEffect(seedEffect)
+    end
+    
     level:RemoveCurses(curse)
-    local curses = level:GetCurses()
     
     -- switch permanent debug options over to normal api options
+    local curses = level:GetCurses()
     if curses & curse == curse then
       Isaac.ExecuteCommand('curse 0')
       level:AddCurse(curses & ~curse, false)
@@ -145,7 +202,7 @@ if REPENTOGON then
     do
       idx = i
       local keys = {}
-      local name = mod:getXmlCurseName(v.id) or ''
+      local name = mod:getXmlCurseUntranslatedName(v.id) or ''
       table.insert(keys, mod:localize('Curses', name))
       if v.hint then
         table.insert(keys, v.hint)
@@ -187,10 +244,11 @@ if REPENTOGON then
         local level = game:GetLevel()
         if b then
           if curse == LevelCurse.CURSE_OF_LABYRINTH or curse == LevelCurse.CURSE_OF_GIANT then
+            mod:addCurse(curse)
             mod.curses = level:GetCurses() | curse
             mod:reloadStage()
           else
-            level:AddCurse(curse, false)
+            mod:addCurse(curse)
           end
         else
           if curse == LevelCurse.CURSE_OF_LABYRINTH or curse == LevelCurse.CURSE_OF_GIANT then
