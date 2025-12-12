@@ -236,11 +236,12 @@ if REPENTOGON then
     if #keys > 0 then
       ImGui.SetHelpmarker(chkId, table.concat(keys, ', '))
     end
-    ImGui.AddCallback(chkId, ImGuiCallback.Render, function()
+    ImGui.AddCallback(chkId, ImGuiCallback.Visible, function()
       local level = game:GetLevel()
       ImGui.UpdateData(chkId, ImGuiData.Value, level:GetCurses() & curse == curse)
     end)
     ImGui.AddCallback(chkId, ImGuiCallback.Edited, function(b)
+      b = not b -- using Visible over Render flips the boolean for some reason
       if Isaac.IsInGame() then
         local level = game:GetLevel()
         if b then
